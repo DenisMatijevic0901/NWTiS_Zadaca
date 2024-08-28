@@ -1,0 +1,73 @@
+docker container stop nwtis_hsql_dz_2c
+docker container stop nwtis_h2_dz_2c
+docker container remove nwtis_hsql_dz_2c
+docker container remove nwtis_h2_dz_2c
+docker image remove nwtis_hsql_dz_2i
+docker image remove nwtis_h2_dz_2i
+docker volume remove nwtis_hsql_dz_2v
+docker volume remove nwtis_h2_dz_2v
+docker network remove nwtis_dz_2n
+
+docker network create --subnet=20.24.5.0/24 nwtis_dz_2n
+docker network inspect nwtis_dz_2n
+
+docker volume create nwtis_hsql_dz_2v
+docker volume inspect nwtis_hsql_dz_2v
+sudo ls -al /var/lib/docker/volumes/nwtis_hsql_dz_2v/_data
+sudo cp -R /opt/hsqldb-2.7.2/hsqldb/data/* /var/lib/docker/volumes/nwtis_hsql_dz_2v/_data/
+
+cd dmatijevi/dmatijevi_vjezba_07_dz_2
+docker build -t nwtis_hsql_dz_2i -f Dockerfile.hsql .
+
+docker run -it -d --network=nwtis_dz_2n --ip 20.24.5.3 \
+-p 9001:9001 \
+--name=nwtis_hsql_dz_2c --hostname=nwtis_hsql_dz_2c \
+--mount source=nwtis_hsql_dz_2v,target=/opt/data \
+nwtis_hsql_dz_2i:latest
+
+
+
+docker volume create nwtis_h2_dz_2v
+docker volume inspect nwtis_h2_dz_2v
+sudo ls -al /var/lib/docker/volumes/nwtis_h2_dz_2v/_data
+sudo cp -R /opt/database/* /var/lib/docker/volumes/nwtis_h2_dz_2v/_data/
+
+docker build -t nwtis_h2_dz_2i -f Dockerfile.h2 .
+
+docker run -it -d --network=nwtis_dz_2n --ip 20.24.5.4 \
+-p 9092:9092 \
+--name=nwtis_h2_dz_2c --hostname=nwtis_h2_dz_2c \
+--mount source=nwtis_h2_dz_2v,target=/opt/database \
+nwtis_h2_dz_2i:latest
+
+
+
+cd /opt/payara6-web/glassfish/bin
+./startserv
+
+mvn cargo:redeploy -P ServerEE-local
+
+java -jar target/dmatijevi_vjezba_07_dz_2_servisi-1.0.0-jar-with-dependencies.jar
+
+
+docker-compose up -d
+
+docker-compose down
+docker-compose up --build -d
+docker logs nwtis_app
+
+docker logs -f nwtis_rest
+
+
+
+docker volume create nwtis_hsqldb_data
+docker volume inspect nwtis_hsqldb_data
+sudo ls -al /var/lib/docker/volumes/nwtis_hsqldb_data/_data
+sudo cp -R /opt/hsqldb-2.7.2/hsqldb/data/* /var/lib/docker/volumes/nwtis_hsqldb_data/_data/
+docker volume remove nwtis_hsqldb_data
+
+docker volume create nwtis_h2_data
+docker volume inspect nwtis_h2_data
+sudo ls -al /var/lib/docker/volumes/nwtis_h2_data/_data
+sudo cp -R /opt/database/* /var/lib/docker/volumes/nwtis_h2_data/_data/
+docker volume remove nwtis_h2_data

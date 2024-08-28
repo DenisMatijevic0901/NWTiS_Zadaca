@@ -1,0 +1,6 @@
+#NWTiS 2024.
+#Thu Mar 07 10:23:41 CET 2024
+korisnickoImeBazaPodataka=nwtis_4
+lozinkaBazaPodataka=nwtis#4
+urlBazaPodataka=jdbc:h2:tcp://20.24.5.4:9092/nwtis_4
+upravljacBazaPodataka=org.h2.Driver

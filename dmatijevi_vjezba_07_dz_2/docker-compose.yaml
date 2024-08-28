@@ -1,0 +1,73 @@
+version: '3'
+
+services:
+  rest:
+    build:
+      context: .
+      dockerfile: Dockerfile.rest
+    container_name: nwtis_rest
+    networks:
+      nwtis:
+        ipv4_address: 20.24.5.5
+    ports:
+      - "9080:8080"
+    restart: unless-stopped
+    
+  hsqldb:
+    build:
+      context: .
+      dockerfile: Dockerfile.hsql
+    container_name: nwtis_hsqldb
+    networks:
+      nwtis:
+        ipv4_address: 20.24.5.3
+    environment:
+      HSQLDB_DATABASE_NAME: nwtis_4
+      HSQLDB_DATABASE_ALIAS: nwtis_4
+      HSQLDB_USER: sa
+      HSQLDB_PASSWORD: ""
+    volumes:
+      - nwtis_hsqldb_data:/opt/database
+    restart: unless-stopped
+
+  h2:
+    build:
+      context: .
+      dockerfile: Dockerfile.h2
+    container_name: nwtis_h2
+    networks:
+      nwtis:
+        ipv4_address: 20.24.5.4
+    volumes:
+      - nwtis_h2_data:/opt/database
+    restart: unless-stopped
+    
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    container_name: nwtis_app
+    networks:
+      nwtis:
+        ipv4_address: 20.24.5.2
+    depends_on:
+      - hsqldb
+      - h2
+      - rest
+    command: ["go"]
+    restart: unless-stopped
+    
+networks:
+  nwtis:
+    name: nwtis
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 20.24.5.0/24
+          gateway: 20.24.5.1
+
+volumes:
+  nwtis_hsqldb_data:
+    external: true
+  nwtis_h2_data:
+    external: true
